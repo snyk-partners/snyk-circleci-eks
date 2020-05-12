@@ -18,7 +18,7 @@ workflows:
           dockerfile: Dockerfile
           path: ./submodules/goof/
           tag: 'latest,${CIRCLE_BUILD_NUM}'
-          requirements:
+          requires:
             build_test
 
 jobs:

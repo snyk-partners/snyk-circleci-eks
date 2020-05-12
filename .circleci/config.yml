@@ -3,10 +3,36 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@6.8.2
 
-workflows:
+jobs:
+  build_test:
+    docker:
+      - image: circleci/node:9.11.2
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: "pull submodules"
+          command: |
+            git submodule init
+            git submodule update --recursive
+      - run:
+          name: "run test"
+          command: |
+            cd submodules/goof
+            npm install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  
   build_and_push_image:
-    jobs:
-      - build_test
+    docker:
+      - image: circleci/node:9.11.2
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - setup_remote_docker
       - aws-ecr/build-and-push-image:
           account-url: AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME
           aws-access-key-id: ACCESS_KEY_ID_ENV_VAR_NAME
@@ -18,24 +44,11 @@ workflows:
           dockerfile: Dockerfile
           path: ./submodules/goof/
           tag: 'latest,${CIRCLE_BUILD_NUM}'
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - build_test
+      - build_and_push_image:
           requires:
             - build_test
-
-jobs:
-  build_test:
-    docker:
-      - image: circleci/node:9.11.2
-    steps:
-      - checkout
-      - run:
-          name: "pull submodules"
-          command: |
-            git submodule init
-            git submodule update --recursive
-      - run:
-          name: "run test"
-          command: |
-            cd submodule/goof
-            mongod &
-            npm insall
-            npm start

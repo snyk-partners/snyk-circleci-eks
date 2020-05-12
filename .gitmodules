@@ -1,9 +1,9 @@
 [submodule "submodules/goof"]
 	path = submodules/goof
-	url = https://github.com/snyk/goof.git
+	url = git@github.com:snyk/goof.git
 [submodule "submodules/aws-ecr-orb"]
 	path = submodules/aws-ecr-orb
-	url = https://github.com/CircleCI-Public/aws-ecr-orb.git
+	url = git@github.com:CircleCI-Public/aws-ecr-orb.git
 [submodule "submodules/aws-eks-orb"]
 	path = submodules/aws-eks-orb
-	url = https://github.com/CircleCI-Public/aws-eks-orb.git
+	url = git@github.com:CircleCI-Public/circleci-demo-aws-eks.git

@@ -2,12 +2,16 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@6.8.2
+  snyk: snyk/snyk@0.0.1
+
+defaults: &defaults
+  docker:
+    - image: circleci/node:9.11.2
+  working_directory: ~/repo
 
 jobs:
   test_app:
-    docker:
-      - image: circleci/node:9.11.2
-    working_directory: ~/repo
+    <<: *defaults
     steps:
       - checkout
       - run:
@@ -24,11 +28,18 @@ jobs:
           root: .
           paths:
             - .
-
+  scan_app:
+    <<: *defaults
+    steps:
+      - checkout
+      - snyk/scan:
+          fail-on-issues: false
+          monitor-on-build: true
+          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app'
+          severity-threshold: high
+          token-variable: SNYK_TOKEN
   build_and_scan_image:
-    docker:
-      - image: circleci/node:9.11.2
-    working_directory: ~/repo
+    <<: *defaults
     steps:
       - attach_workspace:
           at: ~/repo
@@ -39,11 +50,16 @@ jobs:
           path: ./submodules/goof/
           repo: ${CIRCLE_PROJECT_REPONAME}
           tag: 'latest,<< pipeline.number >>'
-
+      - snyk/scan:
+          docker-image-name: '$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${tag}'
+          fail-on-issues: false
+          monitor-on-build: true
+          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
+          severity-threshold: high
+          target-file: Dockerfile
+          token-variable: SNYK_TOKEN
   build_and_push_image:
-    docker:
-      - image: circleci/node:9.11.2
-    working_directory: ~/repo
+    <<: *defaults
     steps:
       - attach_workspace:
           at: ~/repo
@@ -64,9 +80,12 @@ workflows:
   build_and_deploy:
     jobs:
       - test_app
-      - build_and_scan_image:
+      - scan_app:
           requires:
             - test_app
+      - build_and_scan_image:
+          requires:
+            - scan_app
       - build_and_push_image:
           requires:
             - build_and_scan_image

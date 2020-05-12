@@ -14,11 +14,12 @@ workflows:
           region: AWS_REGION_ENV_VAR_NAME
           repo: ${CIRCLE_PROJECT_REPONAME}
           create-repo: true
+          checkout: true
           dockerfile: Dockerfile
-          path: submodules/goof
+          path: ./submodules/goof/
           tag: 'latest,${CIRCLE_BUILD_NUM}'
-          requires:
-            - build_test
+          requirements:
+            build_test
 
 jobs:
   build_test:
@@ -31,3 +32,10 @@ jobs:
           command: |
             git submodule init
             git submodule update --recursive
+      - run:
+          name: "run test"
+          command: |
+            cd submodule/goof
+            mongod &
+            npm insall
+            npm start

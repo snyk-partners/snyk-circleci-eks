@@ -58,7 +58,7 @@ jobs:
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
           severity-threshold: high
-          target-file: Dockerfile
+          target-file: ./submodules/goof/Dockerfile
           token-variable: SNYK_TOKEN
   build_and_push_image:
     <<: *defaults

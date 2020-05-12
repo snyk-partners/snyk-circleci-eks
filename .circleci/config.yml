@@ -1,6 +1,18 @@
 version: 2.1
+
 orbs:
   aws-ecr: circleci/aws-ecr@6.8.2
+
+commands:
+  checkout:
+    steps:
+      - checkout
+      - run:
+          name: "pull submodules"
+          command: |
+            git submodule init
+            git submodule update --recursive
+
 workflows:
   build_and_push_image:
     jobs:

@@ -38,6 +38,7 @@ jobs:
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app'
           severity-threshold: high
           token-variable: SNYK_TOKEN
+          target-file: ./submodules/goof/package.json
   build_and_scan_image:
     <<: *defaults
     steps:

@@ -19,7 +19,7 @@ workflows:
           path: ./submodules/goof/
           tag: 'latest,${CIRCLE_BUILD_NUM}'
           requires:
-            build_test
+            - build_test
 
 jobs:
   build_test:

@@ -31,7 +31,8 @@ jobs:
   scan_app:
     <<: *defaults
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/repo
       - snyk/scan:
           fail-on-issues: false
           monitor-on-build: true

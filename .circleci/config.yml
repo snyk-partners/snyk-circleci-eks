@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@6.8.2
-  snyk: snyk/snyk@0.0.1
+  snyk: snyk/snyk@0.0.10
 
 defaults: &defaults
   docker:

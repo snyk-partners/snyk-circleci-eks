@@ -55,7 +55,7 @@ jobs:
       - snyk/scan:
           docker-image-name: '$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}'
           fail-on-issues: false
-          monitor-on-build: false
+          monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
           severity-threshold: high
           target-file: ./submodules/goof/Dockerfile

@@ -53,7 +53,7 @@ jobs:
           dockerfile: Dockerfile
           path: ./submodules/goof/
           repo: ${CIRCLE_PROJECT_REPONAME}
-          tag: << pipeline.number >>
+          tag: ${CIRCLE_SHA1}
       - snyk/scan:
           docker-image-name: '$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}'
           fail-on-issues: false
@@ -78,7 +78,7 @@ jobs:
           checkout: true
           dockerfile: Dockerfile
           path: ./submodules/goof/
-          tag: << pipeline.number >>
+          tag: ${CIRCLE_SHA1}
   deploy_application:
     executor: aws-eks/python3
     parameters:
@@ -149,8 +149,6 @@ jobs:
       cluster-name:
         type: string
       aws-region:
-        description: |
-          AWS region
         type: string
         default: ""
     steps:
@@ -188,14 +186,14 @@ workflows:
           cluster-name: snyk-circleci-eks
           aws-region: $AWS_DEFAULT_REGION
           docker-image-name: "$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:<< pipeline.number >>"
-          version-info: << pipeline.number >>
+          version-info: "${CIRCLE_SHA1}"
           requires:
             - aws-eks/create-cluster
       - test_application:
           name: test_application
           cluster-name: snyk-circleci-eks
           aws-region: $AWS_DEFAULT_REGION
-          expected-version-info: << pipeline.number >>
+          expected-version-info: "${CIRCLE_SHA1}"
           requires:
             - deploy_application
       - undeploy_application:

@@ -177,18 +177,13 @@ workflows:
       - build_and_push_image:
           requires:
             - build_and_scan_image
-      - aws-eks/create-cluster:
-          cluster-name: ${CIRCLE_PROJECT_REPONAME}
-          aws-region: ${AWS_REGION_ENV_VAR_NAME}
-          requires:
-            - build_and_push_image
       - deploy_app:
           cluster-name: ${CIRCLE_PROJECT_REPONAME}
           aws-region: ${AWS_REGION_ENV_VAR_NAME}
           docker-image-name: "$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}"
           version-info: "${CIRCLE_SHA1}"
           requires:
-            - aws-eks/create-cluster
+            - build_and_push_image
       - test_deployed_app:
           name: test_deployed_app
           cluster-name: ${CIRCLE_PROJECT_REPONAME}
@@ -201,9 +196,3 @@ workflows:
           aws-region: ${AWS_REGION_ENV_VAR_NAME}
           requires:
             - test_deployed_app
-      - aws-eks/delete-cluster:
-          cluster-name: ${CIRCLE_PROJECT_REPONAME}
-          aws-region: ${AWS_REGION_ENV_VAR_NAME}
-          wait: true
-          requires:
-            - undeploy_app

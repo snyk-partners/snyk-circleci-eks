@@ -79,7 +79,7 @@ jobs:
           dockerfile: Dockerfile
           path: ./submodules/goof/
           tag: ${CIRCLE_SHA1}
-  deploy_application:
+  deploy_app:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -111,7 +111,7 @@ jobs:
           resource-name: deployment/goof
       - kubernetes/create-or-update-resource:
           resource-file-path: "deployment/goof-service.yaml"
-  test_application:
+  test_deployed_app:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -143,7 +143,7 @@ jobs:
             done
             sleep 180
             curl -s --retry 10 "http://$EXTERNAL_IP" | grep "<< parameters.expected-version-info >>"
-  undeploy_application:
+  undeploy_app:
     executor: aws-eks/python3
     parameters:
       cluster-name:
@@ -178,32 +178,32 @@ workflows:
           requires:
             - build_and_scan_image
       - aws-eks/create-cluster:
-          cluster-name: eks-orb-demo-app-deployment
+          cluster-name: snyk-circleci-cluster
           aws-region: $AWS_DEFAULT_REGION
           requires:
             - build_and_push_image
-      - deploy_application:
-          cluster-name: snyk-circleci-eks
+      - deploy_app:
+          cluster-name: snyk-circleci-cluster
           aws-region: $AWS_DEFAULT_REGION
           docker-image-name: "$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}"
           version-info: "${CIRCLE_SHA1}"
           requires:
             - aws-eks/create-cluster
-      - test_application:
-          name: test_application
-          cluster-name: snyk-circleci-eks
+      - test_deployed_app:
+          name: test_deployed_app
+          cluster-name: snyk-circleci-cluster
           aws-region: $AWS_DEFAULT_REGION
           expected-version-info: "${CIRCLE_SHA1}"
           requires:
-            - deploy_application
-      - undeploy_application:
-          cluster-name: snyk-circleci-eks
+            - deploy_app
+      - undeploy_app:
+          cluster-name: snyk-circleci-cluster
           aws-region: $AWS_DEFAULT_REGION
           requires:
-            - test_application
+            - test_deployed_app
       - aws-eks/delete-cluster:
-          cluster-name: snyk-circleci-eks
+          cluster-name: snyk-circleci-cluster
           aws-region: $AWS_DEFAULT_REGION
           wait: true
           requires:
-            - undeploy_application
+            - undeploy_app

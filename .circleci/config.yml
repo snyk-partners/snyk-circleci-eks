@@ -55,7 +55,7 @@ jobs:
           repo: ${CIRCLE_PROJECT_REPONAME}
           tag: ${CIRCLE_SHA1}
       - snyk/scan:
-          docker-image-name: '$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}'
+          docker-image-name: '$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}'
           fail-on-issues: false
           monitor-on-build: true
           project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
@@ -185,7 +185,7 @@ workflows:
       - deploy_application:
           cluster-name: snyk-circleci-eks
           aws-region: $AWS_DEFAULT_REGION
-          docker-image-name: "$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:<< pipeline.number >>"
+          docker-image-name: "$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}"
           version-info: "${CIRCLE_SHA1}"
           requires:
             - aws-eks/create-cluster

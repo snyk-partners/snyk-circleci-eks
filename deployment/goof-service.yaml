@@ -22,7 +22,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+<<<<<<< HEAD
+  name: goof-mongo
+=======
   name: goof
+>>>>>>> 8c6e40b37414f04052310935e0f696e1a143f64e
   labels:
     app: goof
 spec:

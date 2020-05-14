@@ -24,6 +24,9 @@ spec:
           ports:
             - containerPort: 3001
             - containerPort: 9229
+          env:
+            - name: DOCKER
+              value: "1"
 ---
 apiVersion: apps/v1
 kind: Deployment

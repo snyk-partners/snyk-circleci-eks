@@ -10,6 +10,9 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 3001
+  - protocol: TCP
+    port: 9229
+    targetPort: 9229
   selector:
     app: goof
 ---

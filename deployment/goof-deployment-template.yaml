@@ -31,21 +31,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo
+  name: goof-mongo
   labels:
-    app: mongo
+    app: goof-mongo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mongo
+      app: goof-mongo
   template:
     metadata:
       labels:
-        app: mongo
+        app: goof-mongo
     spec:
       containers:
-        - name: mongo
+        - name: goof-mongo
           image: mongo
           ports:
             - containerPort: 27017

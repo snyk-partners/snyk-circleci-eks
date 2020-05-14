@@ -9,6 +9,7 @@ spec:
   selector:
     matchLabels:
       app: goof
+      tier: frontend
   template:
     metadata:
       labels:
@@ -31,18 +32,19 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: goof-mongo
+  name: goof
   labels:
-    app: goof-mongo
+    app: goof
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: goof-mongo
+      app: goof
+      tier: backend
   template:
     metadata:
       labels:
-        app: goof-mongo
+        app: goof
     spec:
       containers:
         - name: goof-mongo

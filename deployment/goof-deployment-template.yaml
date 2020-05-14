@@ -5,10 +5,10 @@ metadata:
   labels:
     app: goof
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: goof
-  replicas: 3
   template:
     metadata:
       labels:
@@ -21,10 +21,28 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
-          env:
-            - name: VERSION_INFO
-              value: "VERSION_INFO_VALUE"
-            - name: BUILD_DATE
-              value: "BUILD_DATE_VALUE"
           ports:
             - containerPort: 3001
+            - containerPort: 9229
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        name: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo
+          ports:
+            - containerPort: 27017

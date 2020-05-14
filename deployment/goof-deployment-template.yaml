@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: goof
-  labels:
-    app: goof
 spec:
   replicas: 1
   selector:
@@ -14,6 +12,7 @@ spec:
     metadata:
       labels:
         app: goof
+        tier: frontend
     spec:
       containers:
         - name: goof
@@ -32,9 +31,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: goof
-  labels:
-    app: goof
+  name: goof-mongo
 spec:
   replicas: 1
   selector:
@@ -45,6 +42,7 @@ spec:
     metadata:
       labels:
         app: goof
+        tier: backend
     spec:
       containers:
         - name: goof-mongo

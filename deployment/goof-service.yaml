@@ -22,7 +22,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+<<<<<<< HEAD
   name: goof-mongo
+=======
+  name: goof
+>>>>>>> fbce702... add tier to manifests
   labels:
     app: goof
 spec:

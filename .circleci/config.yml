@@ -1,0 +1,132 @@
+version: 2.1
+
+orbs:
+  aws-eks: circleci/aws-eks@0.2.7
+  aws-ecr: circleci/aws-ecr@6.8.2
+  kubernetes: circleci/kubernetes@0.11.0
+  snyk: snyk/snyk@0.0.10
+
+defaults: &defaults
+  docker:
+    - image: circleci/node:9.11.2
+  working_directory: ~/repo
+
+jobs:
+  test_app:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: "pull submodules"
+          command: |
+            git submodule init
+            git submodule update --recursive
+      - run:
+          name: "run test"
+          command: |
+            cd submodules/goof
+            npm install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  scan_app:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - snyk/scan:
+          fail-on-issues: false
+          monitor-on-build: true
+          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-app'
+          severity-threshold: high
+          token-variable: SNYK_TOKEN
+          target-file: ./submodules/goof/package.json
+  build_and_scan_image:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - setup_remote_docker
+      - aws-ecr/build-image:
+          account-url: AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME
+          dockerfile: Dockerfile
+          path: ./submodules/goof/
+          repo: ${CIRCLE_PROJECT_REPONAME}
+          tag: ${CIRCLE_SHA1}
+      - snyk/scan:
+          docker-image-name: '$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}'
+          fail-on-issues: false
+          monitor-on-build: true
+          project: '${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}-container'
+          severity-threshold: high
+          target-file: ./submodules/goof/Dockerfile
+          token-variable: SNYK_TOKEN
+  build_and_push_image:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - setup_remote_docker
+      - aws-ecr/build-and-push-image:
+          account-url: AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME
+          aws-access-key-id: ACCESS_KEY_ID_ENV_VAR_NAME
+          aws-secret-access-key: SECRET_ACCESS_KEY_ENV_VAR_NAME
+          region: AWS_REGION_ENV_VAR_NAME
+          repo: ${CIRCLE_PROJECT_REPONAME}
+          create-repo: true
+          checkout: true
+          dockerfile: Dockerfile
+          path: ./submodules/goof/
+          tag: ${CIRCLE_SHA1}
+  deploy_app:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        type: string
+      docker-image-name:
+        type: string
+      version-info:
+        type: string
+      aws-region:
+        type: string
+        default: ""
+    steps:
+      - checkout
+      - run:
+          name: Create deployment manifest
+          command: |
+            BUILD_DATE=$(date '+%Y%m%d%H%M%S')
+            cat deployment/goof-deployment-template.yaml |\
+               sed "s|DOCKER_IMAGE_NAME|<< parameters.docker-image-name >>|g"\
+                 > deployment/goof-deployment.yaml
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+          aws-region: << parameters.aws-region >>
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "deployment/goof-deployment.yaml"
+          get-rollout-status: true
+          resource-name: deployment/goof
+      - kubernetes/create-or-update-resource:
+          resource-file-path: "deployment/goof-service.yaml"
+workflows:
+  build_and_deploy:
+    jobs:
+      - test_app
+      - scan_app:
+          requires:
+            - test_app
+      - build_and_scan_image:
+          requires:
+            - scan_app
+      - build_and_push_image:
+          requires:
+            - build_and_scan_image
+      - deploy_app:
+          cluster-name: ${CIRCLE_PROJECT_REPONAME}
+          aws-region: ${AWS_REGION_ENV_VAR_NAME}
+          docker-image-name: "$AWS_ECR_ACCOUNT_URL_ENV_VAR_NAME/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}"
+          version-info: "${CIRCLE_SHA1}"
+          requires:
+            - build_and_push_image

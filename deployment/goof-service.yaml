@@ -22,6 +22,7 @@ kind: Service
 metadata:
   name: goof-mongo
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   name: goof
 >>>>>>> fbce702... add tier to manifests
@@ -29,6 +30,8 @@ metadata:
     app: goof
 =======
 >>>>>>> 0325ad3... change labels
+=======
+>>>>>>> b469795afbee389d53bbba065b35dbf1b7b82640
 spec:
   ports:
   - port: 27017

@@ -2,11 +2,3 @@
 	path = submodules/goof
 	url = git@github.com:snyk/goof.git
 	branch = master
-[submodule "submodules/aws-ecr-orb"]
-	path = submodules/aws-ecr-orb
-	url = git@github.com:CircleCI-Public/aws-ecr-orb.git
-	branch = master
-[submodule "submodules/aws-eks-orb"]
-	path = submodules/aws-eks-orb
-	url = git@github.com:CircleCI-Public/aws-eks-orb.git
-	branch = master
